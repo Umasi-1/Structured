@@ -31,7 +31,6 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-// Check if apps are already initialized to prevent hot-reload errors in dev
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -213,25 +212,24 @@ export default function App() {
   if (!user) return <AuthScreen />;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans relative flex flex-col md:flex-row">
+    // FIX 1: Root container now handles overflow properly and ensures full width
+    <div className="min-h-screen w-full bg-gray-50 text-gray-800 font-sans relative overflow-x-hidden">
+      
       {saveSuccess && <div className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg z-50 flex items-center animate-bounce-in"><CheckCircle size={20} className="mr-2" />{saveSuccess}</div>}
       
-      {/* NAVIGATION - Sidebar on Desktop, Bottom bar on Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 md:static md:w-72 md:h-screen bg-white border-t md:border-t-0 md:border-r border-gray-200 z-40 flex md:flex-col justify-around md:justify-start p-2 md:p-6 space-y-0 md:space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none pb-safe-area">
-        <div className="hidden md:flex items-center space-x-3 mb-8 px-2"><div className="bg-indigo-600 p-2 rounded-xl"><Sparkles className="text-white" size={24} /></div><h1 className="text-xl font-bold text-gray-900 tracking-tight">Structured AI</h1></div>
-        <NavButton active={view === 'planner'} onClick={() => setView('planner')} icon={Layout} label="Planner" />
-        <NavButton active={view === 'profile'} onClick={() => setView('profile')} icon={User} label="Context" />
-        <NavButton active={view === 'history'} onClick={() => setView('history')} icon={History} label="History" />
-        <NavButton active={view === 'log'} onClick={() => setView('log')} icon={Book} label="Log" />
-        <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon={Settings} label="Settings" />
-      </div>
+      {/* MAIN CONTENT AREA - Moves independently, not nested inside flex-row causing width issues */}
+      <div className="w-full h-full min-h-screen pb-32 md:pb-10 md:pl-72">
+        <div className="max-w-3xl mx-auto p-4 md:p-10 w-full">
+          
+          {/* Header */}
+          <div className="md:hidden flex items-center space-x-3 mb-6">
+            <div className="bg-indigo-600 p-2 rounded-xl"><Sparkles className="text-white" size={20} /></div>
+            <h1 className="text-xl font-bold text-gray-900 tracking-tight">Structured AI</h1>
+          </div>
 
-      {/* MAIN CONTENT AREA */}
-      <div className="flex-1 p-4 md:p-10 pb-32 md:pb-10 overflow-y-auto h-screen bg-gray-50">
-        <div className="max-w-3xl mx-auto w-full">
           {view === 'planner' && (
             <div className="space-y-6 animate-fade-in">
-              <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Today's Plan</h2></header>
+              <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Today's Plan</h2></header>
               <Card className="p-6">
                 <InputArea label="Focus for today?" value={todayRequest} onChange={setTodayRequest} placeholder="e.g., Heavy coding, gym in evening." />
                 <Button onClick={handleGeneratePlan} loading={generating} icon={Sparkles} className="w-full md:w-auto">{generating ? 'Thinking...' : 'Generate Plan'}</Button>
@@ -242,7 +240,7 @@ export default function App() {
 
           {view === 'profile' && (
             <div className="space-y-6 animate-fade-in">
-              <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">My Context</h2></header>
+              <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">My Context</h2></header>
               <Card className="p-6 space-y-6">
                 <InputArea label="Bio" value={profile.bio} onChange={(v) => setProfile({...profile, bio: v})} placeholder="Who are you?" />
                 <InputArea label="Goals" value={profile.goals} onChange={(v) => setProfile({...profile, goals: v})} placeholder="What do you want to achieve?" />
@@ -254,13 +252,12 @@ export default function App() {
 
           {view === 'log' && (
             <div className="space-y-6 animate-fade-in">
-              <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Log Progress</h2></header>
+              <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Log Progress</h2></header>
               <Card className="p-6 space-y-6">
                 <InputArea label="How did it go?" value={newLog.summary} onChange={(v) => setNewLog({...newLog, summary: v})} placeholder="I finished the tasks..." />
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-gray-700">Mood</label>
-                  {/* FIX: Explicitly setting background color and text color */}
-                  <select className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-indigo-100 outline-none" value={newLog.mood} onChange={e => setNewLog({...newLog, mood: e.target.value})}>
+                  <select className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-indigo-100 outline-none appearance-none" style={{backgroundImage: 'none'}} value={newLog.mood} onChange={e => setNewLog({...newLog, mood: e.target.value})}>
                     <option value="Productive">Productive</option>
                     <option value="Tired">Tired</option>
                     <option value="Procrastinated">Procrastinated</option>
@@ -275,7 +272,7 @@ export default function App() {
 
           {view === 'history' && (
             <div className="space-y-4 animate-fade-in">
-               <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">History</h2></header>
+               <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">History</h2></header>
                {dailyLogs.length === 0 && <p className="text-gray-500 text-center py-10">No history yet.</p>}
                {dailyLogs.map(log => <Card key={log.id} className="p-5 hover:shadow-md transition-shadow"><div className="flex justify-between mb-2 font-semibold text-indigo-600"><span>{new Date(log.createdAt?.seconds * 1000).toLocaleDateString()}</span><span className="bg-indigo-50 px-3 py-1 rounded-full text-xs text-indigo-700">{log.mood}</span></div><p className="text-gray-600 leading-relaxed">{log.summary}</p></Card>)}
             </div>
@@ -283,7 +280,7 @@ export default function App() {
 
           {view === 'settings' && (
             <div className="space-y-6 animate-fade-in">
-              <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Settings</h2></header>
+              <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Settings</h2></header>
               <Card className="p-6 flex flex-col gap-4">
                 <div className="p-4 bg-gray-50 rounded-xl mb-2"><span className="text-gray-500 text-sm">Logged in as</span><br/><span className="font-semibold">{user.email}</span></div>
                 <Button onClick={() => signOut(auth)} variant="secondary" icon={LogOut} className="justify-start">Sign Out</Button>
@@ -293,6 +290,17 @@ export default function App() {
           )}
         </div>
       </div>
+
+      {/* NAVIGATION BAR - Fixed Bottom on Mobile, Fixed Sidebar on Desktop */}
+      <div className="fixed bottom-0 left-0 right-0 md:top-0 md:left-0 md:w-72 md:h-screen bg-white border-t md:border-t-0 md:border-r border-gray-200 z-50 flex md:flex-col justify-around md:justify-start p-2 md:p-6 space-y-0 md:space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none pb-safe-area">
+        <div className="hidden md:flex items-center space-x-3 mb-8 px-2"><div className="bg-indigo-600 p-2 rounded-xl"><Sparkles className="text-white" size={24} /></div><h1 className="text-xl font-bold text-gray-900 tracking-tight">Structured AI</h1></div>
+        <NavButton active={view === 'planner'} onClick={() => setView('planner')} icon={Layout} label="Planner" />
+        <NavButton active={view === 'profile'} onClick={() => setView('profile')} icon={User} label="Context" />
+        <NavButton active={view === 'history'} onClick={() => setView('history')} icon={History} label="History" />
+        <NavButton active={view === 'log'} onClick={() => setView('log')} icon={Book} label="Log" />
+        <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon={Settings} label="Settings" />
+      </div>
+
     </div>
   );
 }
