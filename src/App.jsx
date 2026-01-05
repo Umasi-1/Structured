@@ -74,30 +74,30 @@ const generatePlan = async (userProfile, lastLog, userRequest) => {
 
 // --- COMPONENTS ---
 const Button = ({ children, onClick, variant = 'primary', className = '', disabled = false, loading = false, icon: Icon, type = 'button' }) => {
-  const baseStyle = "flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm active:scale-95";
+  const baseStyle = "flex items-center justify-center px-6 py-4 rounded-2xl font-bold text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm active:scale-95";
   const variants = {
     primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200",
-    secondary: "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50",
+    secondary: "bg-gray-100 text-gray-800 hover:bg-gray-200",
     danger: "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
   };
   return (
     <button type={type} onClick={onClick} disabled={disabled || loading} className={`${baseStyle} ${variants[variant]} ${className}`}>
-      {loading ? <Loader2 size={18} className="animate-spin mr-2" /> : Icon && <Icon size={18} className="mr-2" />}
+      {loading ? <Loader2 size={24} className="animate-spin mr-2" /> : Icon && <Icon size={24} className="mr-2" />}
       {children}
     </button>
   );
 };
 
 const Card = ({ children, className = '' }) => (
-  <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm ${className}`}>{children}</div>
+  <div className={`bg-white rounded-3xl border border-gray-100 md:border-gray-200 md:shadow-sm ${className}`}>{children}</div>
 );
 
 const InputArea = ({ label, value, onChange, placeholder, rows = 3 }) => (
-  <div className="mb-4">
-    <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+  <div className="mb-6">
+    <label className="block text-base font-bold text-gray-900 mb-3">{label}</label>
     <textarea
       value={value} onChange={(e) => onChange(e.target.value)}
-      className="w-full p-4 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none resize-none bg-gray-50 focus:bg-white transition-all"
+      className="w-full p-5 rounded-2xl border-2 border-gray-100 focus:border-indigo-600 focus:ring-0 outline-none resize-none bg-gray-50 focus:bg-white transition-all text-lg"
       rows={rows} placeholder={placeholder}
     />
   </div>
@@ -125,29 +125,32 @@ const AuthScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8">
-        <div className="flex justify-center mb-6"><div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-200"><Sparkles className="text-white" size={32} /></div></div>
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">{isSignUp ? 'Create Account' : 'Welcome Back'}</h2>
-        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-6 flex items-center"><AlertCircle size={16} className="mr-2" />{error}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <div className="flex justify-center mb-8"><div className="bg-indigo-600 p-4 rounded-3xl shadow-xl shadow-indigo-200"><Sparkles className="text-white" size={40} /></div></div>
+        <h2 className="text-3xl font-black text-center text-gray-900 mb-2">{isSignUp ? 'Create Account' : 'Welcome Back'}</h2>
+        <p className="text-center text-gray-500 mb-8 font-medium">Your personal AI productivity architect.</p>
+        
+        {error && <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm mb-6 flex items-center font-medium"><AlertCircle size={20} className="mr-3" />{error}</div>}
+        
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" required className="w-full p-3 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <label className="block text-sm font-bold text-gray-900 mb-2">Email</label>
+            <input type="email" required className="w-full p-4 rounded-2xl border-2 border-gray-100 outline-none focus:border-indigo-600 bg-gray-50 focus:bg-white transition-all font-medium" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-bold text-gray-900 mb-2">Password</label>
             <div className="relative">
-              <input type={showPassword ? "text" : "password"} required minLength={6} className="w-full p-3 pr-10 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500" value={password} onChange={(e) => setPassword(e.target.value)} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
+              <input type={showPassword ? "text" : "password"} required minLength={6} className="w-full p-4 pr-12 rounded-2xl border-2 border-gray-100 outline-none focus:border-indigo-600 bg-gray-50 focus:bg-white transition-all font-medium" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-4 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={24} /> : <Eye size={24} />}</button>
             </div>
           </div>
-          <Button type="submit" className="w-full mt-4" loading={loading} icon={Lock}>{isSignUp ? 'Sign Up' : 'Log In'}</Button>
+          <Button type="submit" className="w-full mt-2" loading={loading} icon={Lock}>{isSignUp ? 'Sign Up' : 'Log In'}</Button>
         </form>
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-semibold hover:underline">{isSignUp ? 'Log In' : 'Sign Up'}</button>
+        <div className="mt-8 text-center text-base font-medium text-gray-600">
+          <button onClick={() => setIsSignUp(!isSignUp)} className="text-indigo-600 font-bold hover:underline">{isSignUp ? 'Log In' : 'Sign Up'}</button>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
@@ -208,56 +211,57 @@ export default function App() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>;
+  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>;
   if (!user) return <AuthScreen />;
 
   return (
-    // FIX 1: Root container now handles overflow properly and ensures full width
-    <div className="min-h-screen w-full bg-gray-50 text-gray-800 font-sans relative overflow-x-hidden">
+    // FIX: Pure white background everywhere, remove all grayness
+    <div className="min-h-screen w-full bg-white text-gray-800 font-sans relative overflow-x-hidden">
       
-      {saveSuccess && <div className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg z-50 flex items-center animate-bounce-in"><CheckCircle size={20} className="mr-2" />{saveSuccess}</div>}
+      {saveSuccess && <div className="fixed top-6 right-6 bg-black text-white px-6 py-4 rounded-full shadow-2xl z-50 flex items-center animate-bounce-in font-bold"><CheckCircle size={24} className="mr-3" />{saveSuccess}</div>}
       
-      {/* MAIN CONTENT AREA - Moves independently, not nested inside flex-row causing width issues */}
-      <div className="w-full h-full min-h-screen pb-32 md:pb-10 md:pl-72">
-        <div className="max-w-3xl mx-auto p-4 md:p-10 w-full">
+      {/* MAIN CONTENT - Removed max-width constraints on mobile to fill screen */}
+      <div className="w-full h-full min-h-screen pb-32 md:pb-10 md:pl-80">
+        <div className="max-w-5xl mx-auto p-6 md:p-12 w-full">
           
-          {/* Header */}
-          <div className="md:hidden flex items-center space-x-3 mb-6">
-            <div className="bg-indigo-600 p-2 rounded-xl"><Sparkles className="text-white" size={20} /></div>
-            <h1 className="text-xl font-bold text-gray-900 tracking-tight">Structured AI</h1>
+          {/* Header Mobile */}
+          <div className="md:hidden flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-black text-gray-900 tracking-tight">Structured AI</h1>
+            <div className="bg-indigo-600 p-2 rounded-xl"><Sparkles className="text-white" size={24} /></div>
           </div>
 
           {view === 'planner' && (
-            <div className="space-y-6 animate-fade-in">
-              <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Today's Plan</h2></header>
-              <Card className="p-6">
+            <div className="space-y-8 animate-fade-in">
+              <header className="hidden md:block"><h2 className="text-4xl font-black text-gray-900 tracking-tight">Today's Plan</h2></header>
+              <div className="bg-white md:bg-white md:border md:border-gray-100 md:rounded-3xl md:p-8">
                 <InputArea label="Focus for today?" value={todayRequest} onChange={setTodayRequest} placeholder="e.g., Heavy coding, gym in evening." />
-                <Button onClick={handleGeneratePlan} loading={generating} icon={Sparkles} className="w-full md:w-auto">{generating ? 'Thinking...' : 'Generate Plan'}</Button>
-                {generatedOutput && <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100 mt-6 prose prose-indigo text-gray-700 whitespace-pre-wrap leading-relaxed shadow-inner">{generatedOutput}<div className="mt-4"><Button onClick={() => {navigator.clipboard.writeText(generatedOutput); setSaveSuccess('Copied!');}} variant="secondary" icon={Clipboard} size="sm">Copy to Clipboard</Button></div></div>}
-              </Card>
+                <Button onClick={handleGeneratePlan} loading={generating} icon={Sparkles} className="w-full shadow-lg shadow-indigo-200">{generating ? 'Thinking...' : 'Generate Plan'}</Button>
+                {generatedOutput && <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100 mt-8 prose prose-lg prose-indigo text-gray-800 whitespace-pre-wrap leading-relaxed">{generatedOutput}<div className="mt-6"><Button onClick={() => {navigator.clipboard.writeText(generatedOutput); setSaveSuccess('Copied!');}} variant="secondary" icon={Clipboard} size="sm" className="w-full">Copy to Clipboard</Button></div></div>}
+              </div>
             </div>
           )}
 
           {view === 'profile' && (
-            <div className="space-y-6 animate-fade-in">
-              <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">My Context</h2></header>
-              <Card className="p-6 space-y-6">
+            <div className="space-y-8 animate-fade-in">
+              <header className="hidden md:block"><h2 className="text-4xl font-black text-gray-900 tracking-tight">My Context</h2></header>
+              <div className="bg-white md:bg-white md:border md:border-gray-100 md:rounded-3xl md:p-8 space-y-8">
                 <InputArea label="Bio" value={profile.bio} onChange={(v) => setProfile({...profile, bio: v})} placeholder="Who are you?" />
                 <InputArea label="Goals" value={profile.goals} onChange={(v) => setProfile({...profile, goals: v})} placeholder="What do you want to achieve?" />
                 <InputArea label="Constraints" value={profile.constraints} onChange={(v) => setProfile({...profile, constraints: v})} placeholder="Schedule constraints?" />
-                <div className="flex justify-end"><Button onClick={handleSaveProfile} icon={Save}>Save Profile</Button></div>
-              </Card>
+                <Button onClick={handleSaveProfile} icon={Save} className="w-full">Save Profile</Button>
+              </div>
             </div>
           )}
 
           {view === 'log' && (
-            <div className="space-y-6 animate-fade-in">
-              <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Log Progress</h2></header>
-              <Card className="p-6 space-y-6">
+            <div className="space-y-8 animate-fade-in">
+              <header className="hidden md:block"><h2 className="text-4xl font-black text-gray-900 tracking-tight">Log Progress</h2></header>
+              <div className="bg-white md:bg-white md:border md:border-gray-100 md:rounded-3xl md:p-8 space-y-8">
                 <InputArea label="How did it go?" value={newLog.summary} onChange={(v) => setNewLog({...newLog, summary: v})} placeholder="I finished the tasks..." />
                 <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">Mood</label>
-                  <select className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-indigo-100 outline-none appearance-none" style={{backgroundImage: 'none'}} value={newLog.mood} onChange={e => setNewLog({...newLog, mood: e.target.value})}>
+                  <label className="block text-lg font-bold text-gray-900 mb-3">Mood</label>
+                  {/* FIX: Dark text, white background for visibility */}
+                  <select className="w-full p-5 border-2 border-gray-100 rounded-2xl bg-white text-gray-900 font-bold focus:border-indigo-600 outline-none appearance-none text-lg" value={newLog.mood} onChange={e => setNewLog({...newLog, mood: e.target.value})}>
                     <option value="Productive">Productive</option>
                     <option value="Tired">Tired</option>
                     <option value="Procrastinated">Procrastinated</option>
@@ -265,35 +269,35 @@ export default function App() {
                     <option value="Neutral">Neutral</option>
                   </select>
                 </div>
-                <div className="flex justify-end"><Button onClick={handleSaveLog} icon={CheckCircle}>Complete Day</Button></div>
-              </Card>
+                <Button onClick={handleSaveLog} icon={CheckCircle} className="w-full">Complete Day</Button>
+              </div>
             </div>
           )}
 
           {view === 'history' && (
-            <div className="space-y-4 animate-fade-in">
-               <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">History</h2></header>
-               {dailyLogs.length === 0 && <p className="text-gray-500 text-center py-10">No history yet.</p>}
-               {dailyLogs.map(log => <Card key={log.id} className="p-5 hover:shadow-md transition-shadow"><div className="flex justify-between mb-2 font-semibold text-indigo-600"><span>{new Date(log.createdAt?.seconds * 1000).toLocaleDateString()}</span><span className="bg-indigo-50 px-3 py-1 rounded-full text-xs text-indigo-700">{log.mood}</span></div><p className="text-gray-600 leading-relaxed">{log.summary}</p></Card>)}
+            <div className="space-y-6 animate-fade-in">
+               <header className="hidden md:block"><h2 className="text-4xl font-black text-gray-900 tracking-tight">History</h2></header>
+               {dailyLogs.length === 0 && <p className="text-gray-400 text-center py-20 text-xl font-medium">No history yet.</p>}
+               {dailyLogs.map(log => <div key={log.id} className="p-6 border-2 border-gray-50 rounded-3xl hover:border-indigo-50 transition-colors"><div className="flex justify-between mb-3 font-bold text-indigo-600 text-lg"><span>{new Date(log.createdAt?.seconds * 1000).toLocaleDateString()}</span><span className="bg-indigo-50 px-4 py-1 rounded-full text-sm text-indigo-700">{log.mood}</span></div><p className="text-gray-600 text-lg leading-relaxed">{log.summary}</p></div>)}
             </div>
           )}
 
           {view === 'settings' && (
-            <div className="space-y-6 animate-fade-in">
-              <header className="hidden md:block"><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Settings</h2></header>
-              <Card className="p-6 flex flex-col gap-4">
-                <div className="p-4 bg-gray-50 rounded-xl mb-2"><span className="text-gray-500 text-sm">Logged in as</span><br/><span className="font-semibold">{user.email}</span></div>
-                <Button onClick={() => signOut(auth)} variant="secondary" icon={LogOut} className="justify-start">Sign Out</Button>
-                <Button onClick={executeDelete} variant="danger" icon={Trash2} className="justify-start">Delete Account</Button>
-              </Card>
+            <div className="space-y-8 animate-fade-in">
+              <header className="hidden md:block"><h2 className="text-4xl font-black text-gray-900 tracking-tight">Settings</h2></header>
+              <div className="flex flex-col gap-6">
+                <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100"><span className="text-gray-500 font-medium">Logged in as</span><br/><span className="font-bold text-xl text-gray-900">{user.email}</span></div>
+                <Button onClick={() => signOut(auth)} variant="secondary" icon={LogOut} className="w-full justify-center">Sign Out</Button>
+                <Button onClick={executeDelete} variant="danger" icon={Trash2} className="w-full justify-center">Delete Account</Button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* NAVIGATION BAR - Fixed Bottom on Mobile, Fixed Sidebar on Desktop */}
-      <div className="fixed bottom-0 left-0 right-0 md:top-0 md:left-0 md:w-72 md:h-screen bg-white border-t md:border-t-0 md:border-r border-gray-200 z-50 flex md:flex-col justify-around md:justify-start p-2 md:p-6 space-y-0 md:space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none pb-safe-area">
-        <div className="hidden md:flex items-center space-x-3 mb-8 px-2"><div className="bg-indigo-600 p-2 rounded-xl"><Sparkles className="text-white" size={24} /></div><h1 className="text-xl font-bold text-gray-900 tracking-tight">Structured AI</h1></div>
+      {/* NAVIGATION BAR - Floating Style on Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 md:top-0 md:left-0 md:w-80 md:h-screen bg-white/95 backdrop-blur-xl border-t md:border-t-0 md:border-r border-gray-100 z-50 flex md:flex-col justify-around md:justify-start p-2 md:p-8 space-y-0 md:space-y-4 pb-safe-area">
+        <div className="hidden md:flex items-center space-x-4 mb-10 px-2"><div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-200"><Sparkles className="text-white" size={28} /></div><h1 className="text-2xl font-black text-gray-900 tracking-tight">Structured AI</h1></div>
         <NavButton active={view === 'planner'} onClick={() => setView('planner')} icon={Layout} label="Planner" />
         <NavButton active={view === 'profile'} onClick={() => setView('profile')} icon={User} label="Context" />
         <NavButton active={view === 'history'} onClick={() => setView('history')} icon={History} label="History" />
@@ -306,7 +310,8 @@ export default function App() {
 }
 
 const NavButton = ({ active, onClick, icon: Icon, label }) => (
-  <button onClick={onClick} className={`flex flex-col md:flex-row items-center md:space-x-3 p-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 w-full md:w-auto ${active ? 'bg-indigo-50 text-indigo-700 font-semibold transform scale-105 md:scale-100' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
-    <Icon size={24} className="mb-1 md:mb-0" strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] md:text-sm font-medium">{label}</span>
+  <button onClick={onClick} className={`flex flex-col md:flex-row items-center md:space-x-4 p-2 md:px-6 md:py-4 rounded-2xl transition-all duration-200 w-full md:w-auto ${active ? 'text-indigo-600 bg-indigo-50/50 md:bg-indigo-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
+    <Icon size={28} className={active ? "text-indigo-600" : "text-gray-400"} strokeWidth={active ? 3 : 2} />
+    <span className={`text-[10px] md:text-lg font-bold ${active ? 'text-indigo-700' : 'text-gray-500'}`}>{label}</span>
   </button>
 );
