@@ -7,11 +7,11 @@ import {
 import { initializeApp } from 'firebase/app';
 import { 
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, signOut, deleteUser 
+  signInWithEmailAndPassword, signOut, deleteUser, signInWithCustomToken 
 } from 'firebase/auth';
 import { 
   getFirestore, collection, doc, setDoc, onSnapshot, 
-  serverTimestamp, addDoc 
+  serverTimestamp, addDoc, deleteDoc 
 } from 'firebase/firestore';
 
 // --- CONFIGURATION ---
@@ -31,11 +31,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+// Check if apps are already initialized to prevent hot-reload errors in dev
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Use a fixed ID for the web app since we aren't using the Canvas ID anymore
+// Use a fixed ID for the web app
 const appId = "smart-planner-web";
 
 // --- AI Service ---
@@ -74,10 +75,10 @@ const generatePlan = async (userProfile, lastLog, userRequest) => {
 
 // --- COMPONENTS ---
 const Button = ({ children, onClick, variant = 'primary', className = '', disabled = false, loading = false, icon: Icon, type = 'button' }) => {
-  const baseStyle = "flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyle = "flex items-center justify-center px-4 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm active:scale-95";
   const variants = {
-    primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg",
-    secondary: "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm",
+    primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200",
+    secondary: "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50",
     danger: "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
   };
   return (
@@ -89,7 +90,7 @@ const Button = ({ children, onClick, variant = 'primary', className = '', disabl
 };
 
 const Card = ({ children, className = '' }) => (
-  <div className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`}>{children}</div>
+  <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm ${className}`}>{children}</div>
 );
 
 const InputArea = ({ label, value, onChange, placeholder, rows = 3 }) => (
@@ -97,7 +98,7 @@ const InputArea = ({ label, value, onChange, placeholder, rows = 3 }) => (
     <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
     <textarea
       value={value} onChange={(e) => onChange(e.target.value)}
-      className="w-full p-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none resize-none bg-gray-50 focus:bg-white"
+      className="w-full p-4 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none resize-none bg-gray-50 focus:bg-white transition-all"
       rows={rows} placeholder={placeholder}
     />
   </div>
@@ -127,18 +128,18 @@ const AuthScreen = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8">
-        <div className="flex justify-center mb-6"><div className="bg-indigo-600 p-3 rounded-xl shadow-lg"><Sparkles className="text-white" size={32} /></div></div>
+        <div className="flex justify-center mb-6"><div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-200"><Sparkles className="text-white" size={32} /></div></div>
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">{isSignUp ? 'Create Account' : 'Welcome Back'}</h2>
         {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-6 flex items-center"><AlertCircle size={16} className="mr-2" />{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" required className="w-full p-3 rounded-lg border border-gray-200 outline-none" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input type="email" required className="w-full p-3 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <div className="relative">
-              <input type={showPassword ? "text" : "password"} required minLength={6} className="w-full p-3 pr-10 rounded-lg border border-gray-200 outline-none" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <input type={showPassword ? "text" : "password"} required minLength={6} className="w-full p-3 pr-10 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500" value={password} onChange={(e) => setPassword(e.target.value)} />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
             </div>
           </div>
@@ -212,78 +213,92 @@ export default function App() {
   if (!user) return <AuthScreen />;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans relative">
-      {saveSuccess && <div className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center"><CheckCircle size={20} className="mr-2" />{saveSuccess}</div>}
+    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans relative flex flex-col md:flex-row">
+      {saveSuccess && <div className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg z-50 flex items-center animate-bounce-in"><CheckCircle size={20} className="mr-2" />{saveSuccess}</div>}
       
-      <div className="fixed bottom-0 left-0 right-0 md:top-0 md:left-0 md:w-64 md:h-full bg-white border-t md:border-r border-gray-200 z-10 flex md:flex-col justify-around md:justify-start p-2 md:p-6 space-y-0 md:space-y-2 shadow-lg md:shadow-none">
-        <div className="hidden md:flex items-center space-x-3 mb-8 px-2"><div className="bg-indigo-600 p-2 rounded-lg"><Sparkles className="text-white" size={24} /></div><h1 className="text-xl font-bold text-gray-900 tracking-tight">Structured AI</h1></div>
-        <NavButton active={view === 'planner'} onClick={() => setView('planner')} icon={Layout} label="Daily Planner" />
-        <NavButton active={view === 'profile'} onClick={() => setView('profile')} icon={User} label="My Context" />
+      {/* NAVIGATION - Sidebar on Desktop, Bottom bar on Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 md:static md:w-72 md:h-screen bg-white border-t md:border-t-0 md:border-r border-gray-200 z-40 flex md:flex-col justify-around md:justify-start p-2 md:p-6 space-y-0 md:space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none pb-safe-area">
+        <div className="hidden md:flex items-center space-x-3 mb-8 px-2"><div className="bg-indigo-600 p-2 rounded-xl"><Sparkles className="text-white" size={24} /></div><h1 className="text-xl font-bold text-gray-900 tracking-tight">Structured AI</h1></div>
+        <NavButton active={view === 'planner'} onClick={() => setView('planner')} icon={Layout} label="Planner" />
+        <NavButton active={view === 'profile'} onClick={() => setView('profile')} icon={User} label="Context" />
         <NavButton active={view === 'history'} onClick={() => setView('history')} icon={History} label="History" />
-        <NavButton active={view === 'log'} onClick={() => setView('log')} icon={Book} label="Log Progress" />
+        <NavButton active={view === 'log'} onClick={() => setView('log')} icon={Book} label="Log" />
         <NavButton active={view === 'settings'} onClick={() => setView('settings')} icon={Settings} label="Settings" />
-        <div className="flex-grow hidden md:block" />
-        <div className="hidden md:block px-4 py-2 text-xs text-gray-400">{user.email}</div>
       </div>
 
-      <div className="md:ml-64 p-4 md:p-8 pb-24 md:pb-8 max-w-4xl mx-auto">
-        {view === 'planner' && (
-          <div className="space-y-6">
-            <header><h2 className="text-2xl font-bold text-gray-900">Today's Plan</h2></header>
-            <Card className="p-6">
-              <InputArea label="Focus for today?" value={todayRequest} onChange={setTodayRequest} placeholder="e.g., Heavy coding, gym in evening." />
-              <Button onClick={handleGeneratePlan} loading={generating} icon={Sparkles}>{generating ? 'Thinking...' : 'Generate Plan'}</Button>
-              {generatedOutput && <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100 mt-4 prose text-gray-700 whitespace-pre-wrap">{generatedOutput}<div className="mt-4"><Button onClick={() => {navigator.clipboard.writeText(generatedOutput); setSaveSuccess('Copied!');}} variant="secondary" icon={Clipboard} size="sm">Copy</Button></div></div>}
-            </Card>
-          </div>
-        )}
+      {/* MAIN CONTENT AREA */}
+      <div className="flex-1 p-4 md:p-10 pb-32 md:pb-10 overflow-y-auto h-screen bg-gray-50">
+        <div className="max-w-3xl mx-auto w-full">
+          {view === 'planner' && (
+            <div className="space-y-6 animate-fade-in">
+              <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Today's Plan</h2></header>
+              <Card className="p-6">
+                <InputArea label="Focus for today?" value={todayRequest} onChange={setTodayRequest} placeholder="e.g., Heavy coding, gym in evening." />
+                <Button onClick={handleGeneratePlan} loading={generating} icon={Sparkles} className="w-full md:w-auto">{generating ? 'Thinking...' : 'Generate Plan'}</Button>
+                {generatedOutput && <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100 mt-6 prose prose-indigo text-gray-700 whitespace-pre-wrap leading-relaxed shadow-inner">{generatedOutput}<div className="mt-4"><Button onClick={() => {navigator.clipboard.writeText(generatedOutput); setSaveSuccess('Copied!');}} variant="secondary" icon={Clipboard} size="sm">Copy to Clipboard</Button></div></div>}
+              </Card>
+            </div>
+          )}
 
-        {view === 'profile' && (
-          <div className="space-y-6">
-            <header><h2 className="text-2xl font-bold text-gray-900">My Context</h2></header>
-            <Card className="p-6 space-y-6">
-              <InputArea label="Bio" value={profile.bio} onChange={(v) => setProfile({...profile, bio: v})} placeholder="Who are you?" />
-              <InputArea label="Goals" value={profile.goals} onChange={(v) => setProfile({...profile, goals: v})} placeholder="What do you want to achieve?" />
-              <InputArea label="Constraints" value={profile.constraints} onChange={(v) => setProfile({...profile, constraints: v})} placeholder="Schedule constraints?" />
-              <div className="flex justify-end"><Button onClick={handleSaveProfile} icon={Save}>Save Profile</Button></div>
-            </Card>
-          </div>
-        )}
+          {view === 'profile' && (
+            <div className="space-y-6 animate-fade-in">
+              <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">My Context</h2></header>
+              <Card className="p-6 space-y-6">
+                <InputArea label="Bio" value={profile.bio} onChange={(v) => setProfile({...profile, bio: v})} placeholder="Who are you?" />
+                <InputArea label="Goals" value={profile.goals} onChange={(v) => setProfile({...profile, goals: v})} placeholder="What do you want to achieve?" />
+                <InputArea label="Constraints" value={profile.constraints} onChange={(v) => setProfile({...profile, constraints: v})} placeholder="Schedule constraints?" />
+                <div className="flex justify-end"><Button onClick={handleSaveProfile} icon={Save}>Save Profile</Button></div>
+              </Card>
+            </div>
+          )}
 
-        {view === 'log' && (
-          <div className="space-y-6">
-            <header><h2 className="text-2xl font-bold text-gray-900">Log Progress</h2></header>
-            <Card className="p-6 space-y-6">
-              <InputArea label="How did it go?" value={newLog.summary} onChange={(v) => setNewLog({...newLog, summary: v})} placeholder="I finished the tasks..." />
-              <div><label className="block text-sm font-semibold mb-2">Mood</label><select className="w-full p-2 border rounded" value={newLog.mood} onChange={e => setNewLog({...newLog, mood: e.target.value})}><option>Productive</option><option>Tired</option><option>Procrastinated</option></select></div>
-              <div className="flex justify-end"><Button onClick={handleSaveLog} icon={CheckCircle}>Complete Day</Button></div>
-            </Card>
-          </div>
-        )}
+          {view === 'log' && (
+            <div className="space-y-6 animate-fade-in">
+              <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Log Progress</h2></header>
+              <Card className="p-6 space-y-6">
+                <InputArea label="How did it go?" value={newLog.summary} onChange={(v) => setNewLog({...newLog, summary: v})} placeholder="I finished the tasks..." />
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">Mood</label>
+                  {/* FIX: Explicitly setting background color and text color */}
+                  <select className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-indigo-100 outline-none" value={newLog.mood} onChange={e => setNewLog({...newLog, mood: e.target.value})}>
+                    <option value="Productive">Productive</option>
+                    <option value="Tired">Tired</option>
+                    <option value="Procrastinated">Procrastinated</option>
+                    <option value="Energetic">Energetic</option>
+                    <option value="Neutral">Neutral</option>
+                  </select>
+                </div>
+                <div className="flex justify-end"><Button onClick={handleSaveLog} icon={CheckCircle}>Complete Day</Button></div>
+              </Card>
+            </div>
+          )}
 
-        {view === 'history' && (
-          <div className="space-y-4">
-             <header><h2 className="text-2xl font-bold text-gray-900">History</h2></header>
-             {dailyLogs.map(log => <Card key={log.id} className="p-4"><div className="flex justify-between mb-2 font-semibold text-indigo-600"><span>{new Date(log.createdAt?.seconds * 1000).toLocaleDateString()}</span><span>{log.mood}</span></div><p>{log.summary}</p></Card>)}
-          </div>
-        )}
+          {view === 'history' && (
+            <div className="space-y-4 animate-fade-in">
+               <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">History</h2></header>
+               {dailyLogs.length === 0 && <p className="text-gray-500 text-center py-10">No history yet.</p>}
+               {dailyLogs.map(log => <Card key={log.id} className="p-5 hover:shadow-md transition-shadow"><div className="flex justify-between mb-2 font-semibold text-indigo-600"><span>{new Date(log.createdAt?.seconds * 1000).toLocaleDateString()}</span><span className="bg-indigo-50 px-3 py-1 rounded-full text-xs text-indigo-700">{log.mood}</span></div><p className="text-gray-600 leading-relaxed">{log.summary}</p></Card>)}
+            </div>
+          )}
 
-        {view === 'settings' && (
-          <div className="space-y-6">
-            <header><h2 className="text-2xl font-bold text-gray-900">Settings</h2></header>
-            <Card className="p-6 flex justify-between">
-              <Button onClick={() => signOut(auth)} variant="secondary" icon={LogOut}>Sign Out</Button>
-              <Button onClick={executeDelete} variant="danger" icon={Trash2}>Delete Account</Button>
-            </Card>
-          </div>
-        )}
+          {view === 'settings' && (
+            <div className="space-y-6 animate-fade-in">
+              <header><h2 className="text-3xl font-bold text-gray-900 tracking-tight">Settings</h2></header>
+              <Card className="p-6 flex flex-col gap-4">
+                <div className="p-4 bg-gray-50 rounded-xl mb-2"><span className="text-gray-500 text-sm">Logged in as</span><br/><span className="font-semibold">{user.email}</span></div>
+                <Button onClick={() => signOut(auth)} variant="secondary" icon={LogOut} className="justify-start">Sign Out</Button>
+                <Button onClick={executeDelete} variant="danger" icon={Trash2} className="justify-start">Delete Account</Button>
+              </Card>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 const NavButton = ({ active, onClick, icon: Icon, label }) => (
-  <button onClick={onClick} className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors w-full md:w-auto ${active ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
-    <Icon size={20} /><span className="hidden md:inline">{label}</span>
+  <button onClick={onClick} className={`flex flex-col md:flex-row items-center md:space-x-3 p-2 md:px-4 md:py-3 rounded-xl transition-all duration-200 w-full md:w-auto ${active ? 'bg-indigo-50 text-indigo-700 font-semibold transform scale-105 md:scale-100' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
+    <Icon size={24} className="mb-1 md:mb-0" strokeWidth={active ? 2.5 : 2} /><span className="text-[10px] md:text-sm font-medium">{label}</span>
   </button>
 );
