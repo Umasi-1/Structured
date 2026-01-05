@@ -75,8 +75,8 @@ const generatePlan = async (userProfile, lastLog, userRequest) => {
 const Button = ({ children, onClick, variant = 'primary', className = '', disabled = false, loading = false, icon: Icon, type = 'button' }) => {
   const baseStyle = "flex items-center justify-center w-full py-4 rounded-2xl font-bold text-[17px] transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
   const variants = {
-    primary: "bg-indigo-600 text-white shadow-lg shadow-indigo-200/50 hover:bg-indigo-700", 
-    secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
+    primary: "bg-indigo-600 text-white shadow-lg shadow-indigo-200/50 hover:bg-indigo-700 hover:shadow-indigo-300/50", 
+    secondary: "bg-white text-gray-900 border-2 border-gray-100 hover:bg-gray-50",
     danger: "bg-red-50 text-red-600 hover:bg-red-100"
   };
   return (
@@ -88,9 +88,9 @@ const Button = ({ children, onClick, variant = 'primary', className = '', disabl
 };
 
 const Section = ({ title, children, className = '' }) => (
-  <div className={`mb-8 animate-fade-in ${className}`}>
-    {title && <h2 className="text-3xl font-bold text-gray-900 mb-6 tracking-tight">{title}</h2>}
-    <div className="space-y-4">{children}</div>
+  <div className={`mb-12 animate-fade-in ${className}`}>
+    {title && <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">{title}</h2>}
+    <div className="space-y-6">{children}</div>
   </div>
 );
 
@@ -99,7 +99,7 @@ const InputArea = ({ label, value, onChange, placeholder, rows = 4 }) => (
     <label className="block text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider ml-1">{label}</label>
     <textarea
       value={value} onChange={(e) => onChange(e.target.value)}
-      className="w-full p-5 rounded-3xl bg-gray-50 text-gray-900 text-lg border-2 border-transparent focus:border-indigo-600 focus:bg-white outline-none resize-none transition-all placeholder:text-gray-400"
+      className="w-full p-5 rounded-3xl bg-white text-gray-900 text-lg border-2 border-gray-100 focus:border-indigo-600 outline-none resize-none transition-all placeholder:text-gray-400 shadow-sm"
       rows={rows} placeholder={placeholder}
     />
   </div>
@@ -111,7 +111,7 @@ const ModernSelect = ({ label, value, onChange, options }) => (
     <div className="relative">
       <select 
         value={value} onChange={e => onChange(e.target.value)}
-        className="w-full p-5 rounded-3xl bg-gray-50 text-gray-900 text-lg border-2 border-transparent focus:border-indigo-600 focus:bg-white outline-none appearance-none transition-all font-medium"
+        className="w-full p-5 rounded-3xl bg-white text-gray-900 text-lg border-2 border-gray-100 focus:border-indigo-600 outline-none appearance-none transition-all font-medium shadow-sm"
       >
         {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
       </select>
@@ -143,7 +143,7 @@ const AuthScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-white flex items-center justify-center p-6 w-full">
       <div className="w-full max-w-sm mx-auto">
         <div className="flex justify-center mb-10">
           <div className="h-16 w-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-200">
@@ -156,9 +156,9 @@ const AuthScreen = () => {
         {error && <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm mb-6 flex items-center font-bold"><AlertCircle size={20} className="mr-3" />{error}</div>}
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="email" placeholder="Email" required className="w-full p-5 rounded-2xl bg-gray-50 text-lg font-medium outline-none focus:ring-2 focus:ring-indigo-600 transition-all" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="email" placeholder="Email" required className="w-full p-5 rounded-2xl bg-white border-2 border-gray-100 text-lg font-medium outline-none focus:border-indigo-600 transition-all shadow-sm" value={email} onChange={(e) => setEmail(e.target.value)} />
           <div className="relative">
-            <input type={showPassword ? "text" : "password"} placeholder="Password" required minLength={6} className="w-full p-5 pr-12 rounded-2xl bg-gray-50 text-lg font-medium outline-none focus:ring-2 focus:ring-indigo-600 transition-all" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input type={showPassword ? "text" : "password"} placeholder="Password" required minLength={6} className="w-full p-5 pr-12 rounded-2xl bg-white border-2 border-gray-100 text-lg font-medium outline-none focus:border-indigo-600 transition-all shadow-sm" value={password} onChange={(e) => setPassword(e.target.value)} />
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400">{showPassword ? <EyeOff size={24} /> : <Eye size={24} />}</button>
           </div>
           <div className="pt-4">
@@ -225,6 +225,7 @@ export default function App() {
   if (!user) return <AuthScreen />;
 
   return (
+    // FIX: Removed 'flex justify-center'. Now uses block layout with auto margins.
     <div className="min-h-screen w-full bg-white text-gray-900 font-sans selection:bg-indigo-600 selection:text-white">
       
       {/* SUCCESS TOAST */}
@@ -234,8 +235,9 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN CONTAINER: Changed from max-w-md to max-w-7xl to fill desktop screens */}
-      <div className="max-w-7xl mx-auto min-h-screen bg-white pb-32 pt-8 px-6">
+      {/* MAIN CONTAINER: Changed to max-w-7xl and mx-auto (centers block). 
+          Removed 'flex' from parent to allow natural full-width expansion. */}
+      <div className="max-w-7xl mx-auto min-h-screen bg-white pb-32 pt-8 px-6 md:px-12">
         
         {/* HEADER */}
         <div className="flex items-center justify-between mb-8">
@@ -254,7 +256,7 @@ export default function App() {
             
             {generatedOutput && (
               <div className="mt-8 animate-fade-in">
-                <div className="bg-gray-50 rounded-3xl p-6 text-lg leading-relaxed text-gray-800 whitespace-pre-wrap mb-4 border border-gray-100">
+                <div className="bg-white rounded-3xl p-6 text-lg leading-relaxed text-gray-800 whitespace-pre-wrap mb-4 border-2 border-gray-100 shadow-sm">
                   {generatedOutput}
                 </div>
                 <Button onClick={() => {navigator.clipboard.writeText(generatedOutput); setSaveSuccess('Copied');}} variant="secondary" icon={Clipboard}>Copy to Clipboard</Button>
@@ -289,10 +291,10 @@ export default function App() {
           <Section title="History">
             {dailyLogs.length === 0 && <div className="text-center py-20 text-gray-300 font-bold text-xl">No logs yet</div>}
             {dailyLogs.map(log => (
-              <div key={log.id} className="mb-4 p-6 bg-gray-50 rounded-3xl">
+              <div key={log.id} className="mb-4 p-6 bg-white border-2 border-gray-50 rounded-3xl hover:border-indigo-50 transition-colors">
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-bold text-gray-400 text-sm uppercase">{new Date(log.createdAt?.seconds * 1000).toLocaleDateString()}</span>
-                  <span className="bg-white px-3 py-1 rounded-full text-xs font-bold shadow-sm text-indigo-600">{log.mood}</span>
+                  <span className="bg-indigo-50 px-3 py-1 rounded-full text-xs font-bold shadow-sm text-indigo-600">{log.mood}</span>
                 </div>
                 <p className="text-gray-800 text-lg">{log.summary}</p>
               </div>
@@ -302,7 +304,7 @@ export default function App() {
 
         {view === 'settings' && (
           <Section title="Settings">
-            <div className="p-6 bg-gray-50 rounded-3xl mb-6">
+            <div className="p-6 bg-white border-2 border-gray-100 rounded-3xl mb-6">
               <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Currently logged in as</span>
               <div className="text-xl font-bold mt-1 text-gray-900">{user.email}</div>
             </div>
@@ -315,7 +317,7 @@ export default function App() {
       </div>
 
       {/* FLOATING NAVIGATION BAR (Glass Effect) */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/80 backdrop-blur-xl border border-gray-100 shadow-2xl shadow-indigo-200/50 rounded-full p-2 flex justify-between items-center z-50">
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/90 backdrop-blur-xl border border-gray-200 shadow-2xl shadow-indigo-200/40 rounded-full p-2 flex justify-between items-center z-50">
         <NavButton active={view === 'planner'} onClick={() => setView('planner')} icon={Layout} />
         <NavButton active={view === 'profile'} onClick={() => setView('profile')} icon={User} />
         <NavButton active={view === 'history'} onClick={() => setView('history')} icon={History} />
