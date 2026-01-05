@@ -7,17 +7,19 @@ import {
 import { initializeApp } from 'firebase/app';
 import { 
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, signOut, deleteUser, signInWithCustomToken 
+  signInWithEmailAndPassword, signOut, deleteUser
 } from 'firebase/auth';
 import { 
   getFirestore, collection, doc, setDoc, onSnapshot, 
-  serverTimestamp, addDoc, deleteDoc 
+  serverTimestamp, addDoc 
 } from 'firebase/firestore';
 
 // --- CONFIGURATION ---
 
-// 1. PASTE YOUR GOOGLE GEMINI API KEY HERE
-const apiKey = "AIzaSyDBz9R1xbxRC5pBrGVAIYLH11k7Ixkb4ak"; 
+// 1. API KEY SETUP
+// FOR LOCAL DEV: Uncomment the line below to use your .env file
+// const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const apiKey = ""; // Keep this empty for the preview to compile
 
 // 2. YOUR FIREBASE CONFIG
 const firebaseConfig = {
@@ -38,6 +40,10 @@ const appId = "smart-planner-web";
 
 // --- AI Service ---
 const generatePlan = async (userProfile, lastLog, userRequest) => {
+  if (!apiKey) {
+    return "Error: API Key is missing. Please check your settings.";
+  }
+
   const systemPrompt = `
     You are an expert productivity strategist.
     Your Goal: Create a specific, actionable natural language plan for the user's day.
@@ -51,8 +57,9 @@ const generatePlan = async (userProfile, lastLog, userRequest) => {
   `;
 
   try {
+    // UPDATED TO STABLE MODEL 1.5-FLASH
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,11 +69,18 @@ const generatePlan = async (userProfile, lastLog, userRequest) => {
         })
       }
     );
+    
+    if (!response.ok) {
+       const errorData = await response.json();
+       console.error("AI API Error:", errorData);
+       throw new Error("API Request Failed");
+    }
+
     const data = await response.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate plan.";
   } catch (error) {
     console.error("AI Error:", error);
-    return "Error connecting to AI. Check your API Key.";
+    return "Error connecting to AI. Please try again later.";
   }
 };
 
@@ -225,21 +239,15 @@ export default function App() {
   if (!user) return <AuthScreen />;
 
   return (
-    // FIX: Removed 'flex justify-center'. Now uses block layout with auto margins.
     <div className="min-h-screen w-full bg-white text-gray-900 font-sans selection:bg-indigo-600 selection:text-white">
-      
-      {/* SUCCESS TOAST */}
       {saveSuccess && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-8 py-3 rounded-full shadow-2xl z-50 flex items-center animate-fade-in font-bold">
           <CheckCircle size={20} className="mr-2 text-white/80" />{saveSuccess}
         </div>
       )}
 
-      {/* MAIN CONTAINER: Changed to max-w-7xl and mx-auto (centers block). 
-          Removed 'flex' from parent to allow natural full-width expansion. */}
-      <div className="max-w-7xl mx-auto min-h-screen bg-white pb-32 pt-8 px-6 md:px-12">
-        
-        {/* HEADER */}
+      {/* Fluid Container: Stretches to fill screen with padding */}
+      <div className="w-full min-h-screen bg-white pb-32 pt-8 px-6 md:px-12">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
             <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-200"><Sparkles className="text-white" size={20} /></div>
@@ -248,12 +256,10 @@ export default function App() {
           <div className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-wider">{view}</div>
         </div>
 
-        {/* CONTENT VIEWS */}
         {view === 'planner' && (
           <Section title="Today's Plan">
             <InputArea label="Focus for today" value={todayRequest} onChange={setTodayRequest} placeholder="e.g. Finish the report, gym at 6pm..." />
             <Button onClick={handleGeneratePlan} loading={generating} icon={Sparkles}>{generating ? 'Thinking...' : 'Generate Plan'}</Button>
-            
             {generatedOutput && (
               <div className="mt-8 animate-fade-in">
                 <div className="bg-white rounded-3xl p-6 text-lg leading-relaxed text-gray-800 whitespace-pre-wrap mb-4 border-2 border-gray-100 shadow-sm">
@@ -277,12 +283,7 @@ export default function App() {
         {view === 'log' && (
           <Section title="Log Progress">
             <InputArea label="How did it go?" value={newLog.summary} onChange={(v) => setNewLog({...newLog, summary: v})} placeholder="What did you get done?" />
-            <ModernSelect 
-              label="Mood" 
-              value={newLog.mood} 
-              onChange={e => setNewLog({...newLog, mood: e.target.value})}
-              options={["Productive", "Tired", "Procrastinated", "Energetic", "Neutral"]} 
-            />
+            <ModernSelect label="Mood" value={newLog.mood} onChange={e => setNewLog({...newLog, mood: e.target.value})} options={["Productive", "Tired", "Procrastinated", "Energetic", "Neutral"]} />
             <div className="pt-4"><Button onClick={handleSaveLog} icon={CheckCircle}>Complete Day</Button></div>
           </Section>
         )}
@@ -316,7 +317,6 @@ export default function App() {
         )}
       </div>
 
-      {/* FLOATING NAVIGATION BAR (Glass Effect) */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/90 backdrop-blur-xl border border-gray-200 shadow-2xl shadow-indigo-200/40 rounded-full p-2 flex justify-between items-center z-50">
         <NavButton active={view === 'planner'} onClick={() => setView('planner')} icon={Layout} />
         <NavButton active={view === 'profile'} onClick={() => setView('profile')} icon={User} />
@@ -329,12 +329,8 @@ export default function App() {
   );
 }
 
-// Icon-only Navigation Button for cleaner look
 const NavButton = ({ active, onClick, icon: Icon }) => (
-  <button 
-    onClick={onClick} 
-    className={`p-4 rounded-full transition-all duration-300 ${active ? 'bg-indigo-600 text-white scale-110 shadow-lg shadow-indigo-200' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
-  >
+  <button onClick={onClick} className={`p-4 rounded-full transition-all duration-300 ${active ? 'bg-indigo-600 text-white scale-110 shadow-lg shadow-indigo-200' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
     <Icon size={22} strokeWidth={active ? 3 : 2} />
   </button>
 );
