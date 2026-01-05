@@ -75,7 +75,7 @@ const generatePlan = async (userProfile, lastLog, userRequest) => {
 const Button = ({ children, onClick, variant = 'primary', className = '', disabled = false, loading = false, icon: Icon, type = 'button' }) => {
   const baseStyle = "flex items-center justify-center w-full py-4 rounded-2xl font-bold text-[17px] transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
   const variants = {
-    primary: "bg-indigo-600 text-white shadow-lg shadow-indigo-200/50 hover:bg-indigo-700", // Restored Purple/Indigo
+    primary: "bg-indigo-600 text-white shadow-lg shadow-indigo-200/50 hover:bg-indigo-700", 
     secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
     danger: "bg-red-50 text-red-600 hover:bg-red-100"
   };
@@ -234,8 +234,8 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN CONTAINER: Centered, max-width constrained but 100% on mobile */}
-      <div className="max-w-md mx-auto min-h-screen bg-white pb-32 pt-8 px-6">
+      {/* MAIN CONTAINER: Changed from max-w-md to max-w-7xl to fill desktop screens */}
+      <div className="max-w-7xl mx-auto min-h-screen bg-white pb-32 pt-8 px-6">
         
         {/* HEADER */}
         <div className="flex items-center justify-between mb-8">
