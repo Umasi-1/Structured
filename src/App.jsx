@@ -17,9 +17,11 @@ import {
 // --- CONFIGURATION ---
 
 // 1. API KEY SETUP
-// FOR LOCAL DEV: Uncomment the line below to use your .env file
-// const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-const apiKey = ""; // Keep this empty for the preview to compile
+// ⚠️ IMPORTANT: When running on your computer/Netlify, REMOVE the "//" from the line below:
+ const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+// ⚠️ KEEP THIS LINE ACTIVE FOR THE PREVIEW TO WORK (It prevents the crash you just saw):
+//const apiKey = ""; 
 
 // 2. YOUR FIREBASE CONFIG
 const firebaseConfig = {
@@ -246,8 +248,12 @@ export default function App() {
         </div>
       )}
 
-      {/* Fluid Container: Stretches to fill screen with padding */}
-      <div className="w-full min-h-screen bg-white pb-32 pt-8 px-6 md:px-12">
+      {/* Fluid Container: 
+          mx-auto centers the block
+          max-w-7xl allows it to get very wide on desktop
+          w-full ensures it takes available space 
+      */}
+      <div className="w-full max-w-7xl mx-auto min-h-screen bg-white pb-32 pt-8 px-6 md:px-12">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
             <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-200"><Sparkles className="text-white" size={20} /></div>
